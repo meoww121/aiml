@@ -1,0 +1,51 @@
+//pipes parent child read file content_9
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    int p1[2], p2[2];
+    char file[100], data[500];
+    int n;
+
+    pipe(p1);
+    pipe(p2);
+
+    if (fork() == 0) {
+        close(p1[1]);
+        close(p2[0]);
+
+        read(p1[0], file, sizeof(file));
+
+        FILE *fp = fopen(file, "r");
+
+        if (fp != NULL) {
+            while ((n = fread(data, 1, sizeof(data), fp)) > 0)
+                write(p2[1], data, n);
+            fclose(fp);
+        }
+
+        close(p1[0]);
+        close(p2[1]);
+    }
+    else {
+        close(p1[0]);
+        close(p2[1]);
+
+        printf("Enter filename: ");
+        scanf("%99s", file);
+
+        write(p1[1], file, sizeof(file));
+        close(p1[1]);
+
+        printf("\nFile contents:\n");
+
+        while ((n = read(p2[0], data, sizeof(data))) > 0)
+            write(1, data, n);
+
+        close(p2[0]);
+        wait(NULL);
+    }
+
+    return 0;
+}

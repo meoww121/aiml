@@ -1,0 +1,48 @@
+
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+sem_t s;
+pthread_mutex_t m;
+int counter = 0;
+
+void *work(void *arg) {
+    int id = *(int *)arg;
+
+    sem_wait(&s);
+    printf("Thread %d acquired resource\n", id);
+
+    pthread_mutex_lock(&m);
+    counter++;
+    printf("Thread %d: Counter = %d\n", id, counter);
+    pthread_mutex_unlock(&m);
+
+    sleep(1);
+
+    printf("Thread %d released resource\n", id);
+    sem_post(&s);
+
+    return NULL;
+}
+
+int main() {
+    pthread_t t[3];
+    int id[3] = {1, 2, 3};
+
+    sem_init(&s, 0, 2);
+    pthread_mutex_init(&m, NULL);
+
+    for (int i = 0; i < 3; i++)
+        pthread_create(&t[i], NULL, work, &id[i]);
+
+    for (int i = 0; i < 3; i++)
+        pthread_join(t[i], NULL);
+
+    sem_destroy(&s);
+    pthread_mutex_destroy(&m);
+
+    printf("Final counter = %d\n", counter);
+    return 0;
+}

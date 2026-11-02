@@ -1,0 +1,160 @@
+
+#include <stdio.h>
+#include <string.h>
+
+#define MAX 100
+
+struct Contact {
+    char name[50];
+    char phone[20];
+    char email[60];
+};
+
+struct Contact book[MAX];
+int count = 0, created = 0;
+
+void createBook() {
+    count = 0;
+    created = 1;
+    printf("Address book created!\n");
+}
+
+void insertContact() {
+    if (count == MAX) {
+        printf("Address book is full!\n");
+        return;
+    }
+
+    printf("Enter name: ");
+    scanf("%s", book[count].name);
+
+    printf("Enter phone: ");
+    scanf("%s", book[count].phone);
+
+    printf("Enter email: ");
+    scanf("%s", book[count].email);
+
+    count++;
+    printf("Contact inserted!\n");
+}
+
+void viewBook() {
+    if (count == 0) {
+        printf("Address book is empty!\n");
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        printf("\nName: %s", book[i].name);
+        printf("\nPhone: %s", book[i].phone);
+        printf("\nEmail: %s\n", book[i].email);
+    }
+}
+
+int findContact(char name[]) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(book[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+void deleteContact() {
+    char name[50];
+
+    printf("Enter name to delete: ");
+    scanf("%s", name);
+
+    int pos = findContact(name);
+
+    for (int i = pos; i < count - 1; i++)
+        book[i] = book[i + 1];
+
+    count--;
+    printf("Contact deleted!\n");
+}
+
+void modifyContact() {
+    char name[50];
+
+    printf("Enter name to modify: ");
+    scanf("%s", name);
+
+    int pos = findContact(name);
+
+    if (pos == -1) {
+        printf("Contact not found!\n");
+        return;
+    }
+
+    printf("Enter new name: ");
+    scanf("%s", book[pos].name);
+
+    printf("Enter new phone: ");
+    scanf("%s", book[pos].phone);
+
+    printf("Enter new email: ");
+    scanf("%s", book[pos].email);
+
+    printf("Contact modified!\n");
+}
+
+int main() {
+    int choice;
+
+    do {
+        printf("\n--- ADDRESS BOOK ---\n");
+        printf("1. Create\n");
+        printf("2. View\n");
+        printf("3. Insert\n");
+        printf("4. Delete\n");
+        printf("5. Modify\n");
+        printf("6. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                createBook();
+                break;
+
+            case 2:
+                if (created)
+                    viewBook();
+                else
+                    printf("Create address book first!\n");
+                break;
+
+            case 3:
+                if (created)
+                    insertContact();
+                else
+                    printf("Create address book first!\n");
+                break;
+
+            case 4:
+                if (created)
+                    deleteContact();
+                else
+                    printf("Create address book first!\n");
+                break;
+
+            case 5:
+                if (created)
+                    modifyContact();
+                else
+                    printf("Create address book first!\n");
+                break;
+
+            case 6:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+
+    } while (choice != 6);
+
+    return 0;
+}

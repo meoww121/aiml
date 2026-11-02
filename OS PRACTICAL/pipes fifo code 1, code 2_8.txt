@@ -1,0 +1,96 @@
+//pipes fifo code 1 sender
+
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
+
+int main() {
+    char str[500], result[500];
+    int fd1, fd2;
+
+    mkfifo("fifo1", 0666);
+    mkfifo("fifo2", 0666);
+
+    fd1 = open("fifo1", O_WRONLY);
+    fd2 = open("fifo2", O_RDONLY);
+
+    printf("Enter sentences (END to stop):\n");
+
+    while (1) {
+        fgets(str, sizeof(str), stdin);
+        write(fd1, str, strlen(str));
+
+        if (strncmp(str, "END", 3) == 0)
+            break;
+    }
+
+    close(fd1);
+
+    int n = read(fd2, result, sizeof(result) - 1);
+    result[n] = '\0';
+
+    printf("\nResult from receiver:\n%s", result);
+
+    close(fd2);
+    return 0;
+}
+
+
+// pipes fifo code 2 reciever
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <ctype.h>
+#include <sys/stat.h>
+
+int main() {
+    char str[500], result[500];
+    int fd1, fd2, ch = 0, words = 0, lines = 0;
+    int inword = 0, n;
+
+    fd1 = open("fifo1", O_RDONLY);
+    fd2 = open("fifo2", O_WRONLY);
+
+    FILE *fp = fopen("result.txt", "w");
+
+    while ((n = read(fd1, str, sizeof(str))) > 0) {
+        for (int i = 0; i < n; i++) {
+            if (strncmp(str + i, "END", 3) == 0)
+                goto done;
+
+            ch++;
+
+            if (str[i] == '\n')
+                lines++;
+
+            if (isspace((unsigned char)str[i]))
+                inword = 0;
+            else if (!inword) {
+                words++;
+                inword = 1;
+            }
+        }
+    }
+
+done:
+    fprintf(fp, "Characters = %d\nWords = %d\nLines = %d\n",
+            ch - 3, words - 1, lines);
+
+    fclose(fp);
+
+    fp = fopen("result.txt", "r");
+    n = fread(result, 1, sizeof(result), fp);
+    fclose(fp);
+
+    write(fd2, result, n);
+
+    close(fd1);
+    close(fd2);
+
+    return 0;
+}
