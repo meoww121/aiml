@@ -1,0 +1,47 @@
+rules = [
+    (["power_on", "fan_running"], "computer_started"),
+    (["computer_started", "display_on"], "computer_working"),
+    (["wifi_enabled", "router_on"], "wifi_connected"),
+    (["wifi_connected", "internet_light_on"], "internet_available"),
+    (["computer_working", "internet_available"], "ready_for_work")
+]
+
+facts = set(input("Enter facts (comma separated): ").lower().replace(" ", "").split(","))
+initial = facts.copy()
+
+print("\nForward Chaining:")
+while True:
+    new = False
+    for conditions, result in rules:
+        if all(x in facts for x in conditions) and result not in facts:
+            facts.add(result)
+            print("Inferred:", result)
+            new = True
+    if not new:
+        break
+
+def backward(goal, known, visited=None):
+    if goal in known:
+        return True
+
+    if visited is None:
+        visited = set()
+
+    if goal in visited:
+        return False
+
+    visited = visited | {goal}
+
+    for conditions, result in rules:
+        if result == goal and all(backward(x, known, visited) for x in conditions):
+            return True
+
+    return False
+
+goal = input("\nEnter goal to prove: ").lower().replace(" ", "_")
+
+print("\nBackward Chaining:")
+if backward(goal, initial):
+    print(goal, "can be proved.")
+else:
+    print(goal, "cannot be proved.")

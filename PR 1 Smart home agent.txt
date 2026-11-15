@@ -1,0 +1,31 @@
+def smart_home_agent(temperature, occupied, brightness):
+
+    actions = {
+        "AC": "OFF",
+        "Heater": "OFF",
+        "Light": "OFF"
+    }
+    if occupied:
+
+        if temperature > 28:
+            actions["AC"] = "ON"
+
+        elif temperature < 18:
+            actions["Heater"] = "ON"
+
+        if brightness < 40:
+            actions["Light"] = "ON"
+
+    return actions
+
+print("Scenario 1:")
+print(smart_home_agent(30, True, 20))
+
+print("\nScenario 2:")
+print(smart_home_agent(22, True, 80))
+
+print("\nScenario 3:")
+print(smart_home_agent(15, True, 20))
+
+print("\nScenario 4:")
+print(smart_home_agent(30, False, 10))
